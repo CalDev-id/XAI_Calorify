@@ -35,19 +35,17 @@ if len(images) < 2:
     raise ValueError("❌ Setidaknya butuh 2 gambar: 1 untuk background, 1 untuk dijelaskan.")
 
 # 6. Pilih background dan gambar yang ingin dijelaskan
-background = images[:10]            # SHAP background (gunakan sebagian data)
-to_explain = images[10:11]          # Gambar ke-11 akan dijelaskan
+background = images[:10]
+to_explain = images[10:11]
 
-# 7. Inisialisasi SHAP explainer khusus untuk image classification
-explainer = shap.GradientExplainer(model, background)
-
-# 8. Hitung SHAP values
+# 7. Gunakan SHAP DeepExplainer
+explainer = shap.DeepExplainer(model, background)
 shap_values = explainer.shap_values(to_explain)
 
-# 9. Tampilkan prediksi top-1 kelas model
+# 8. Prediksi kelas
 preds = model.predict(to_explain)
 predicted_class = np.argmax(preds[0])
 print(f"📊 Predicted class index: {predicted_class}")
 
-# 10. Visualisasi SHAP untuk kelas tersebut
+# 9. Visualisasi SHAP untuk kelas tersebut
 shap.image_plot([shap_values[predicted_class]], to_explain)

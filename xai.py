@@ -105,3 +105,4 @@ shap_values = explainer.shap_values(to_explain)
 
 # 8. Visualisasi hasil SHAP
 shap.image_plot(shap_values, to_explain)
+
