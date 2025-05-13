@@ -9,13 +9,12 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_
 # =============================
 # 1. Load Trained Model
 # =============================
-model = tf.keras.models.load_model('best_calorify.h5')  # ubah jika nama model berbeda
+model = tf.keras.models.load_model('best_calorify.h5')  # Ganti jika nama model berbeda
 model.summary()
 
 # =============================
 # 2. Load Test Dataset
 # =============================
-# Asumsi struktur: dataset/test/<class_name>/*.jpg
 img_size = (224, 224)
 batch_size = 32
 
@@ -23,7 +22,7 @@ test_dataset = image_dataset_from_directory(
     'test',
     image_size=img_size,
     batch_size=batch_size,
-    shuffle=True  # agar gambar yang diambil acak
+    shuffle=True
 )
 
 class_names = test_dataset.class_names
@@ -42,9 +41,15 @@ for test_images, test_labels in test_dataset.take(1):
 # =============================
 # 3. Ambil Background & Test Data untuk SHAP
 # =============================
-# Ambil 100 gambar background dan 5 gambar test untuk dijelaskan
-background = test_images[:100]
-test_to_explain = test_images[100:105]
+# Konversi dari Tensor ke NumPy array
+test_images_np = test_images.numpy()
+
+# Pastikan dataset cukup besar
+if test_images_np.shape[0] < 105:
+    raise ValueError(f"Dataset hanya memiliki {test_images_np.shape[0]} gambar. SHAP memerlukan minimal 105 gambar.")
+
+background = test_images_np[:100]
+test_to_explain = test_images_np[100:105]
 
 # =============================
 # 4. Jalankan SHAP GradientExplainer
@@ -57,12 +62,12 @@ shap_values = explainer.shap_values(test_to_explain)
 # =============================
 # 5. Visualisasi SHAP
 # =============================
-# Visualisasi untuk setiap gambar
 for i in range(len(test_to_explain)):
-    print(f"\nPrediksi untuk gambar ke-{i+1}:")
-    pred = model.predict(np.expand_dims(test_to_explain[i], axis=0))
-    top_class = np.argmax(pred[0])
-    print(f"  Kelas Prediksi: {class_names[top_class]} (Confidence: {pred[0][top_class]:.2f})")
+    img = test_to_explain[i]
+    pred = model.predict(np.expand_dims(img, axis=0))
+    predicted_class = np.argmax(pred)
+    confidence = pred[0][predicted_class]
 
-    # Visualisasi SHAP
-    shap.image_plot([s[i] for s in shap_values], [test_to_explain[i].numpy()])
+    print(f"Gambar ke-{i+1} diprediksi sebagai: {class_names[predicted_class]} (Confidence: {confidence:.2f})")
+
+    shap.image_plot([s[i] for s in shap_values], [img])
