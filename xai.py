@@ -73,7 +73,7 @@ x = Dropout(0.2)(x)
 predictions = Dense(3, activation='softmax')(x)  # Ganti sesuai jumlah kelas
 
 model = Model(inputs=base_model.input, outputs=predictions)
-model.load_weights("best_calorify.h5")
+model.load_weights("/kaggle/working/xai_calorify/best_calorify.h5")
 
 # 3. Fungsi untuk load gambar dari folder
 def load_images_from_folder(folder, target_size=(224, 224)):
@@ -90,7 +90,7 @@ def load_images_from_folder(folder, target_size=(224, 224)):
     return np.array(images_list), filenames
 
 # 4. Load data dari folder test/
-test_folder = "test"
+test_folder = "/kaggle/working/xai_calorify/test"
 images, filenames = load_images_from_folder(test_folder)
 
 # 5. Ambil background dan sampel untuk explain
