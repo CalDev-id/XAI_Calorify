@@ -10,7 +10,7 @@ from tensorflow.keras.preprocessing import image
 # 2. Load model utuh dari .h5
 model = load_model("/kaggle/working/xai_calorify/best_calorify.h5")
 print("✅ Model loaded successfully!")
-model.summary()  # Opsional
+model.summary()
 
 # 3. Fungsi untuk memuat dan memproses gambar dari folder
 def load_images_from_folder(folder_path, target_size=(224, 224)):
@@ -30,15 +30,24 @@ def load_images_from_folder(folder_path, target_size=(224, 224)):
 images, filenames = load_images_from_folder("/kaggle/working/xai_calorify/test")
 print(f"📷 Loaded {len(images)} images from 'test/'")
 
-# 5. Pilih background dan gambar yang ingin dijelaskan
+# 5. Validasi jumlah gambar
+if len(images) < 2:
+    raise ValueError("❌ Setidaknya butuh 2 gambar: 1 untuk background, 1 untuk dijelaskan.")
+
+# 6. Pilih background dan gambar yang ingin dijelaskan
 background = images[:10]            # SHAP background (gunakan sebagian data)
 to_explain = images[10:11]          # Gambar ke-11 akan dijelaskan
 
-# 6. Inisialisasi SHAP explainer (otomatis memilih metode terbaik)
-explainer = shap.Explainer(model, background)
+# 7. Inisialisasi SHAP explainer khusus untuk image classification
+explainer = shap.GradientExplainer(model, background)
 
-# 7. Hitung SHAP values
-shap_values = explainer(to_explain)
+# 8. Hitung SHAP values
+shap_values = explainer.shap_values(to_explain)
 
-# 8. Visualisasi hasil SHAP
-shap.image_plot(shap_values.values, to_explain)
+# 9. Tampilkan prediksi top-1 kelas model
+preds = model.predict(to_explain)
+predicted_class = np.argmax(preds[0])
+print(f"📊 Predicted class index: {predicted_class}")
+
+# 10. Visualisasi SHAP untuk kelas tersebut
+shap.image_plot([shap_values[predicted_class]], to_explain)
