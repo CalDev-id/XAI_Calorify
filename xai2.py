@@ -39,7 +39,8 @@ background = images[:10]
 to_explain = images[10:11]
 
 # 7. Gunakan SHAP DeepExplainer
-explainer = shap.DeepExplainer(model, background)
+explainer = shap.GradientExplainer((model.input, model.output), background)
+
 shap_values = explainer.shap_values(to_explain)
 
 # 8. Prediksi kelas
